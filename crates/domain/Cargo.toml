@@ -1,0 +1,22 @@
+[package]
+name = "domain"
+publish = false
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+readme = { workspace = true }
+repository = { workspace = true }
+license-file = { workspace = true }
+description = "pure domain types — parse, don't validate."
+resolver = "3"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+thiserror = "2"
+getrandom = "0.2"
+
+[lints]
+workspace = true

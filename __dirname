@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+# references:
+# - https://blog.daveeddy.com/2015/04/13/dirname-case-study-for-bash-and-node/
+# - https://mywiki.wooledge.org/BashFAQ/028/
+
+__dirname() {
+  local path="${BASH_SOURCE[0]}"
+  if [[ ! -f "${path}" ]]; then
+    return 1
+  fi
+  while [[ -L "${path}" ]]; do
+    local rl="$(readlink "${path}")"
+    if ((${?} != 0)) || [[ -z "${rl}" ]]; then
+      return 1
+    fi
+    if [[ "${rl:0:1}" == '/' ]]; then
+      path="${rl}"
+    else
+      path="$(dirname "${path}")/${rl}"
+    fi
+  done
+  (CDPATH= cd "$(dirname "${path}")" && pwd)
+}
+
+__dirname="$(__dirname)"
+if ((${?} != 0)) || [[ -z "${__dirname}" ]]; then
+  echo 'failed to determine `__dirname`.' 2>&1
+  exit 1
+fi
+unset -f __dirname
+
+echo "${__dirname}/"

@@ -1,0 +1,28 @@
+[package]
+name = "invoice"
+publish = false
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+readme = { workspace = true }
+repository = { workspace = true }
+license-file = { workspace = true }
+description = "Invoice PDF generation via Typst CLI or library."
+resolver = "3"
+
+[dependencies]
+domain = { workspace = true }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tracing = "0.1"
+typst = "0.15"
+typst-pdf = "0.15"
+typst-layout = "0.15"
+ecow = "0.2"
+tempfile = "3"
+chrono = { workspace = true }
+
+[lints]
+workspace = true

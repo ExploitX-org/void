@@ -1,0 +1,29 @@
+cargo-features = []
+
+[workspace]
+members = ["crates/*"]
+default-members = ["crates/server"]
+resolver = "3"
+
+[workspace.dependencies]
+domain = { path = "crates/domain" }
+database = { path = "crates/database" }
+payment = { path = "crates/payment" }
+email = { path = "crates/email" }
+invoice = { path = "crates/invoice" }
+chrono = "0.4"
+
+[workspace.package]
+version = "1.0.0"
+authors = [
+  "Akilesh A S <io@akileshas.dev>",
+]
+edition = "2024"
+rust-version = "1.97.0"
+readme = "README.md"
+repository = "https://codeberg.org/exploitx/void-srv/"
+license-file = "LICENSE.md"
+
+[workspace.lints.rust]
+
+[workspace.lints.clippy]

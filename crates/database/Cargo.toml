@@ -1,0 +1,21 @@
+[package]
+name = "database"
+publish = false
+version = { workspace = true }
+authors = { workspace = true }
+edition = { workspace = true }
+rust-version = { workspace = true }
+readme = { workspace = true }
+repository = { workspace = true }
+license-file = { workspace = true }
+description = "PostgreSQL repository implementations."
+resolver = "3"
+
+[dependencies]
+domain = { workspace = true }
+sqlx = { version = "0.8", features = ["postgres", "runtime-tokio-rustls", "uuid", "chrono"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+
+[lints]
+workspace = true
