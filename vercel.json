@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "dist",
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/payment/status", "destination": "/assets/html/receipt.html" },
+    { "source": "/", "destination": "/assets/html/index.html" },
+    { "source": "/((?!.*\\..*).*)", "destination": "/assets/html/$1.html" }
+  ]
+}

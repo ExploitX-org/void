@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Into The Void 2.0 — Loading</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { overflow: hidden; height: 100%; background: #000; font-family: 'JetBrains Mono', monospace; }
+
+        #void-video {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: 3;
+            transition: opacity 0.5s ease;
+        }
+
+        #rain-canvas {
+            position: absolute; top: 0; left: 0;
+            z-index: 2;
+            opacity: 0;
+            transition: opacity 1.5s ease;
+            pointer-events: none;
+        }
+        #rain-canvas.visible { opacity: 1; }
+
+        #cinematic-bars {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            box-shadow: inset 0 0vh 0 #000, inset 0 -0vh 0 #000;
+            z-index: 5;
+        }
+
+        #overlay-flash {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #00ffaa;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 20;
+            mix-blend-mode: screen;
+        }
+
+        #titles {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            pointer-events: none;
+            user-select: none;
+            opacity: 0;
+        }
+        #titles.revealed { opacity: 1; }
+
+        .char {
+            display: inline-block;
+            opacity: 0;
+            transform: translateY(30px) scale(0.7);
+            transition: none;
+        }
+        .char.in {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.23,1,0.32,1);
+        }
+
+        #titles h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(28px, 5vw, 72px);
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 0.25em;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        #titles h1.glitch-loop {
+            animation: glitch 3.5s infinite 1s;
+        }
+        #titles h2 {
+            font-size: clamp(11px, 1.8vw, 22px);
+            color: #00ffaa;
+            letter-spacing: 0.35em;
+            margin-top: 14px;
+            text-shadow: 0 0 10px rgba(0,255,170,0.8);
+        }
+        #titles .tagline {
+            font-size: clamp(9px, 1vw, 13px);
+            color: rgba(0,219,233,0.6);
+            letter-spacing: 0.5em;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+        }
+        #titles .tagline.in { opacity: 1; }
+
+        .title-divider {
+            width: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #00ffaa, #00dbe9, transparent);
+            margin: 16px auto 0;
+            box-shadow: 0 0 8px #00ffaa;
+            transition: width 0.8s ease;
+        }
+        .title-divider.in { width: min(420px, 80vw); }
+
+        #hud {
+            position: absolute;
+            bottom: 13vh;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(480px, 82vw);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        #status-text {
+            font-size: 12px;
+            letter-spacing: 4px;
+            color: #00dbe9;
+            text-shadow: 0 0 8px #00dbe9;
+            text-transform: uppercase;
+            text-align: center;
+        }
+        #progress-track {
+            width: 100%;
+            height: 2px;
+            background: rgba(0,219,233,0.15);
+            position: relative;
+        }
+        #progress-bar {
+            height: 100%;
+            width: 0%;
+            background: #00dbe9;
+            box-shadow: 0 0 12px #00dbe9, 0 0 25px #00ffaa;
+            transition: width 0.08s linear;
+        }
+        #progress-pct {
+            font-size: 10px;
+            color: rgba(0,219,233,0.5);
+            letter-spacing: 3px;
+        }
+
+        #scanlines {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(to bottom, transparent 0, transparent 2px, rgba(0,0,0,0.18) 2px, rgba(0,0,0,0.18) 4px);
+            pointer-events: none;
+            z-index: 4;
+            opacity: 0.4;
+        }
+
+        #enter-btn {
+            position: absolute;
+            bottom: 12vh; left: 50%;
+            transform: translateX(-50%);
+            padding: 16px 56px;
+            background: rgba(0,20,14,0.7);
+            border: 1px solid #00ffaa;
+            color: #00ffaa;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            letter-spacing: 6px;
+            cursor: pointer;
+            z-index: 30;
+            display: none; opacity: 0;
+            transition: all 0.5s ease;
+            text-shadow: 0 0 8px #00ffaa;
+            box-shadow: 0 0 20px rgba(0,255,170,0.2), inset 0 0 14px rgba(0,255,170,0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        #enter-btn:hover {
+            background: rgba(0,255,170,0.15);
+            box-shadow: 0 0 40px rgba(0,255,170,0.5), inset 0 0 20px rgba(0,255,170,0.3);
+            transform: translateX(-50%) scale(1.06);
+            color: #fff;
+            border-color: #fff;
+        }
+
+        @keyframes glitch {
+            0%,89%,100% { text-shadow: 0 0 20px rgba(0,219,233,0.9), 0 0 50px rgba(0,255,170,0.5); transform: translate(0,0) skewX(0); }
+            90% {text-shadow: -4px 0 #ff003c, 4px 0 #00dbe9;transform: translate(-3px,1px) skewX(3deg);}
+            91% {text-shadow: 4px 0 #ff003c,-4px 0 #00dbe9;transform: translate(3px,-1px) skewX(-3deg);}
+            92% { text-shadow: 0 0 20px rgba(0,219,233,0.9); transform: translate(0,0) skewX(0); clip-path: none; }
+            95% { text-shadow: -2px 0 #00dbe9; transform: translate(1px,2px); }
+            96% { text-shadow: 2px 0 #ff003c; transform: translate(-1px,-2px); }
+            97% { text-shadow: 0 0 20px rgba(0,219,233,0.9); transform: translate(0,0); }
+        }
+        @keyframes flicker {
+            0%,100% { opacity:1; } 92% { opacity:1; } 93% { opacity:0.4; } 94% { opacity:1; } 96% { opacity:0.6; } 97% { opacity:1; }
+        }
+
+        @media (max-width: 600px) {
+            #hud { bottom: 11vh; }
+            #titles h1 {
+                font-size: 24px;
+                letter-spacing: 0.1em;
+                white-space: normal;
+                line-height: 1.3;
+            }
+            #titles h2 {
+                font-size: 11px;
+                letter-spacing: 0.15em;
+            }
+            #enter-btn {
+                padding: 12px 32px;
+                font-size: 14px;
+                width: 85%;
+                letter-spacing: 4px;
+            }
+        }
+    </style>
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+    <link rel="icon" type="image/png" href="/assets/png/logowhiteexploitx.png?v=2">
+</head>
+<body>
+
+    <video id="void-video" src="/assets/mp4/void.mp4" autoplay muted playsinline webkit-playsinline></video>
+    <canvas id="rain-canvas"></canvas>
+    <div id="cinematic-bars"></div>
+    <div id="scanlines"></div>
+    <div id="overlay-flash"></div>
+
+    <div id="titles">
+        <h1 id="title-h1"></h1>
+        <div class="title-divider" id="title-divider"></div>
+        <h2 id="title-h2"></h2>
+        <div class="tagline" id="title-tagline">EXPLOITX &nbsp;// &nbsp;SYSTEM BREACH COMPLETE</div>
+    </div>
+
+    <div id="hud">
+        <div id="status-text">SYSTEM INITIALIZATION...</div>
+        <div id="progress-track"><div id="progress-bar"></div></div>
+        <div id="progress-pct">000%</div>
+    </div>
+
+    <button id="enter-btn" onclick="window.location.href='/assets/html/home.html'">ENTER MULTIVERSE</button>
+
+    <script>
+    (function () {
+        var rc = document.getElementById('rain-canvas');
+        var rctx = rc.getContext('2d');
+        var FONT_SIZE = 16;
+        var CHARS = '\u30A2\u30A4\u30A6\u30A8\u30AA\u30AB\u30AD\u30AF\u30B1\u30B3\u30B5\u30B7\u30B9\u30BB\u30BD\u30BF\u30C1\u30C4\u30C6\u30C8\u30CA\u30CB\u30CC\u30CD\u30CE\u30CF\u30D2\u30D5\u30D8\u30DB\u30DE\u30DF\u30E0\u30E1\u30E2\u30E4\u30E6\u30E8\u30E9\u30EA\u30EB\u30EC\u30ED\u30EF\u30F2\u30F30123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        var cols, drops, glowFlags;
+        function initRain() {
+            rc.width = innerWidth;
+            rc.height = innerHeight;
+            cols = Math.floor(rc.width / FONT_SIZE);
+            drops = new Float32Array(cols);
+            glowFlags = new Uint8Array(cols);
+            for (var i = 0; i < cols; i++) {
+                drops[i] = Math.random() * -100;
+                glowFlags[i] = Math.random() < 0.12 ? 1 : 0;
+            }
+        }
+        function drawRain(phase) {
+            rctx.fillStyle = phase === 'matrix' ? 'rgba(0,8,4,0.08)' : 'rgba(0,0,0,0.12)';
+            rctx.fillRect(0, 0, rc.width, rc.height);
+            rctx.font = FONT_SIZE + 'px monospace';
+            var len = drops.length;
+            for (var i = 0; i < len; i++) {
+                var y = drops[i] * FONT_SIZE;
+                if (y > -FONT_SIZE && y < rc.height + FONT_SIZE) {
+                    if (glowFlags[i]) {
+                        rctx.fillStyle = '#00ffaa';
+                    } else {
+                        var b = 40 + ((i * 37) % 60);
+                        rctx.fillStyle = 'hsl(155,100%,' + b + '%)';
+                    }
+                    rctx.fillText(CHARS[(i * 7 + Math.floor(drops[i])) % CHARS.length], i * FONT_SIZE, y);
+                }
+                if (y > rc.height && Math.random() > 0.97) drops[i] = 0;
+                drops[i] += 0.5;
+            }
+        }
+        window._rainInit = initRain;
+        window._rainDraw = drawRain;
+        initRain();
+        window.addEventListener('resize', initRain);
+    })();
+    </script>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+        import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+        import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+
+        var scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.02);
+
+        var camera = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+        camera.position.z = 65;
+
+        var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+        renderer.setSize(innerWidth, innerHeight);
+        renderer.toneMapping = THREE.ReinhardToneMapping;
+        renderer.domElement.id = 'three-canvas';
+        renderer.domElement.style.cssText = 'position:absolute;top:0;left:0;z-index:1';
+        document.body.prepend(renderer.domElement);
+
+        var uiText = document.getElementById('status-text');
+        var flashEl = document.getElementById('overlay-flash');
+        var progressEl = document.getElementById('progress-bar');
+        var progressPct = document.getElementById('progress-pct');
+        var hudEl = document.getElementById('hud');
+        var enterBtn = document.getElementById('enter-btn');
+        var titlesEl = document.getElementById('titles');
+        var rainCanvas = document.getElementById('rain-canvas');
+
+        var voidGroup = new THREE.Group();
+        var matrixGroup = new THREE.Group();
+        matrixGroup.visible = false;
+        scene.add(voidGroup, matrixGroup);
+
+        voidGroup.add(new THREE.Mesh(
+            new THREE.SphereGeometry(2, 64, 64),
+            new THREE.MeshBasicMaterial({ color: 0x000000 })
+        ));
+
+        var diskGeo = new THREE.RingGeometry(2.1, 9, 256);
+        var posAttr = diskGeo.attributes.position;
+        var v3 = new THREE.Vector3();
+        for (var di = 0; di < posAttr.count; di++) {
+            v3.fromBufferAttribute(posAttr, di);
+            diskGeo.attributes.uv.setXY(di, v3.length() < 3 ? 0 : 1, 1);
+        }
+        var diskShader = new THREE.ShaderMaterial({
+            uniforms: {
+                uTime: { value: 0 },
+                uColorA: { value: new THREE.Color(0x00dbe9) },
+                uColorB: { value: new THREE.Color(0x00ffaa) }
+            },
+            vertexShader: 'varying vec2 vUv; varying vec3 vPos; void main(){ vUv=uv; vPos=position; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+            fragmentShader: [
+                'uniform float uTime; uniform vec3 uColorA, uColorB; varying vec2 vUv; varying vec3 vPos;',
+                'float rnd(vec2 s){ return fract(sin(dot(s,vec2(12.9898,78.233)))*43758.5453); }',
+                'void main(){',
+                '  float d=length(vPos); float a=atan(vPos.y,vPos.x);',
+                '  float sp=sin(a*16.0+uTime*7.0+d*6.0);',
+                '  float noise=rnd(vUv+uTime*2.0);',
+                '  float ring=step(0.82,fract(d*10.0-uTime*5.0));',
+                '  float alpha=smoothstep(2.1,3.0,d)*(1.0-smoothstep(5.5,9.0,d));',
+                '  vec3 c=mix(uColorA,uColorB,sin(a*2.0+uTime)*0.5+0.5);',
+                '  c*=(1.0+sp*0.5+ring*0.7)*(0.8+noise*0.5);',
+                '  gl_FragColor=vec4(c*2.8,alpha);',
+                '}'
+            ].join('\n'),
+            transparent: true, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false
+        });
+        var disk = new THREE.Mesh(diskGeo, diskShader);
+        disk.rotation.x = -Math.PI / 2.2;
+        voidGroup.add(disk);
+
+        voidGroup.add(new THREE.Mesh(
+            new THREE.SphereGeometry(2.4, 32, 32),
+            new THREE.MeshBasicMaterial({ color: 0x00dbe9, transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, side: THREE.BackSide })
+        ));
+
+        var starGeo = new THREE.BufferGeometry();
+        var sp = [], sc = [];
+        var pal = [new THREE.Color(0x00ffaa), new THREE.Color(0x00dbe9), new THREE.Color(0xffffff), new THREE.Color(0x113322)];
+        for (var si = 0; si < 6000; si++) {
+            sp.push((Math.random()-.5)*350, (Math.random()-.5)*350, (Math.random()-.5)*350);
+            var pc = pal[Math.floor(Math.random()*pal.length)];
+            sc.push(pc.r, pc.g, pc.b);
+        }
+        starGeo.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
+        starGeo.setAttribute('color', new THREE.Float32BufferAttribute(sc, 3));
+        var starSystem = new THREE.Points(starGeo, new THREE.PointsMaterial({
+            size: 0.22, vertexColors: true, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.85
+        }));
+        voidGroup.add(starSystem);
+
+        function makeRing(count, radius, ySpread, color, size) {
+            var geo = new THREE.BufferGeometry();
+            var rp = [];
+            for (var ri = 0; ri < count; ri++) {
+                var a = (ri / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
+                var r = radius + (Math.random() - 0.5) * (radius * 0.3);
+                rp.push(Math.cos(a) * r, (Math.random() - 0.5) * ySpread, Math.sin(a) * r);
+            }
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3));
+            return new THREE.Points(geo, new THREE.PointsMaterial({
+                size: size, color: color, blending: THREE.AdditiveBlending, transparent: true, opacity: 0.8
+            }));
+        }
+        var vortexInner = makeRing(200, 4, 4, 0x00ffaa, 0.18);
+        var vortexMid = makeRing(400, 12, 8, 0x00dbe9, 0.14);
+        var vortexOuter = makeRing(600, 25, 12, 0x00ffaa, 0.1);
+        voidGroup.add(vortexInner, vortexMid, vortexOuter);
+
+        function makeMatrixTex() {
+            var sz = 512, c = document.createElement('canvas');
+            c.width = c.height = sz;
+            var ctx = c.getContext('2d');
+            ctx.fillStyle = '#000804'; ctx.fillRect(0, 0, sz, sz);
+            ctx.font = 'bold 22px monospace';
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            for (var mx = 0; mx < sz; mx += 28) {
+                for (var my = 0; my < sz; my += 28) {
+                    if (Math.random() > 0.35) {
+                        ctx.fillStyle = 'hsl(150,100%,' + (30 + Math.random() * 65) + '%)';
+                        ctx.fillText(String.fromCharCode(0x30A0 + Math.random() * 96), mx + 14, my + 14);
+                    }
+                }
+            }
+            var t = new THREE.CanvasTexture(c);
+            t.wrapS = t.wrapT = THREE.RepeatWrapping;
+            return t;
+        }
+        var monoMat = new THREE.MeshStandardMaterial({
+            map: makeMatrixTex(), emissive: new THREE.Color(0x002211),
+            emissiveIntensity: 0.6, roughness: 0.1, metalness: 0.9,
+            side: THREE.DoubleSide, transparent: true, opacity: 0.85,
+            blending: THREE.AdditiveBlending
+        });
+        var monoGeo = new THREE.BoxGeometry(4, 45, 4);
+        var monoliths = new THREE.InstancedMesh(monoGeo, monoMat, 450);
+        var dummy = new THREE.Object3D();
+        for (var mi = 0; mi < 450; mi++) {
+            dummy.position.set((Math.random()-.5)*160, (Math.random()-.5)*320, (Math.random()-.5)*160);
+            dummy.rotation.y = Math.random() * Math.PI;
+            dummy.scale.setScalar(Math.random() * 1.5 + 0.5);
+            dummy.updateMatrix();
+            monoliths.setMatrixAt(mi, dummy.matrix);
+        }
+        matrixGroup.add(monoliths);
+
+        var lGeo = new THREE.BufferGeometry();
+        var lp = [];
+        for (var li = 0; li < 4000; li++) {
+            var lx = (Math.random()-.5)*160, lz = (Math.random()-.5)*160, ly = (Math.random()-.5)*320;
+            lp.push(lx, ly, lz, lx, ly - (Math.random() * 25 + 5), lz);
+        }
+        lGeo.setAttribute('position', new THREE.Float32BufferAttribute(lp, 3));
+        var codeLines = new THREE.LineSegments(lGeo, new THREE.LineBasicMaterial({
+            color: 0x00ffaa, opacity: 0.28, transparent: true, blending: THREE.AdditiveBlending
+        }));
+        matrixGroup.add(codeLines);
+
+        matrixGroup.add(new THREE.Points(starGeo, new THREE.PointsMaterial({
+            color: 0x00ffaa, size: 0.12, opacity: 0.4, blending: THREE.AdditiveBlending, transparent: true
+        })));
+
+        scene.add(new THREE.AmbientLight(0x003311, 2));
+        var ptLight = new THREE.PointLight(0x00ffaa, 3, 80);
+        ptLight.position.set(0, 20, 0);
+        matrixGroup.add(ptLight);
+
+        var composer = new EffectComposer(renderer);
+        composer.addPass(new RenderPass(scene, camera));
+        var bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 2.0, 0.8, 0.85);
+        composer.addPass(bloom);
+
+        var pageHidden = false;
+        document.addEventListener('visibilitychange', function () { pageHidden = document.hidden; });
+        var clock = new THREE.Clock();
+
+        var LOAD_TIME = 10;
+        var voidVidEl = document.getElementById('void-video');
+        if (voidVidEl) {
+            voidVidEl.addEventListener('loadedmetadata', function () {
+                if (voidVidEl.duration && !isNaN(voidVidEl.duration)) LOAD_TIME = voidVidEl.duration;
+            });
+        }
+
+        var FLASH_DUR = 1.5;
+        var isTransitioned = false;
+        var rainPhase = 'void';
+        var rainFrame = 0;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            if (pageHidden) return;
+            var t = clock.getElapsedTime();
+
+            rainFrame++;
+            if (rainFrame % 2 === 0) window._rainDraw(rainPhase);
+
+            if (t < LOAD_TIME) {
+                var p = t / LOAD_TIME;
+                var pPct = Math.floor(p * 100);
+                progressEl.style.width = pPct + '%';
+                progressPct.innerText = String(pPct).padStart(3, '0') + '%';
+
+                if (p < 0.20) uiText.innerText = 'ESTABLISHING NEURAL LINK...';
+                else if (p < 0.45) uiText.innerText = 'DECRYPTING MULTIVERSE SIGNATURES...';
+                else if (p < 0.70) uiText.innerText = 'MAPPING DIMENSIONAL TOPOLOGY...';
+                else if (p < 0.88) uiText.innerText = 'SYNCHRONIZING VOID V2.0 CORE...';
+                else {
+                    uiText.innerText = 'CRITICAL: EVENT HORIZON BREACH';
+                    uiText.style.color = '#ff003c';
+                    uiText.style.textShadow = '0 0 10px #ff003c';
+                    progressEl.style.background = '#ff003c';
+                    progressEl.style.boxShadow = '0 0 15px #ff003c';
+                    progressPct.style.color = '#ff003c';
+                }
+
+                camera.position.z = 65 - 63 * Math.pow(p, 3);
+                camera.position.x = Math.sin(t * 0.45) * 1.5;
+                var shake = Math.pow(p, 4) * 0.7;
+                camera.position.x += (Math.random()-.5) * shake;
+                camera.position.y += (Math.random()-.5) * shake;
+                camera.rotation.z = Math.sin(t * 0.8) * 0.08 * p;
+
+                diskShader.uniforms.uTime.value = t;
+                disk.rotation.z -= 0.035 + p * 0.45;
+
+                starSystem.position.z += 0.8 + p * 22;
+                if (starSystem.position.z > 175) starSystem.position.z = -175;
+
+                vortexInner.rotation.y -= 0.025;
+                vortexMid.rotation.y -= 0.012;
+                vortexOuter.rotation.y -= 0.006;
+
+                titlesEl.style.transform = 'translate(-50%,-50%) scale(' + (1 + p * 0.12) + ')';
+
+                if (p > 0.3) {
+                    rainCanvas.style.opacity = ((p - 0.3) / 0.7 * 0.25).toFixed(3);
+                }
+
+                bloom.strength = 2.0 + Math.sin(t * 1.5) * 0.5;
+
+            } else if (t < LOAD_TIME + FLASH_DUR) {
+                var tp = (t - LOAD_TIME) / FLASH_DUR;
+                flashEl.style.opacity = Math.sin(tp * Math.PI);
+
+                if (tp > 0.5 && !isTransitioned) {
+                    isTransitioned = true;
+                    rainPhase = 'matrix';
+
+                    voidGroup.visible = false;
+                    var voidVid = document.getElementById('void-video');
+                    if (voidVid) voidVid.style.opacity = '0';
+                    matrixGroup.visible = true;
+                    scene.fog.color.setHex(0x000804);
+                    scene.fog.density = 0.008;
+
+                    camera.position.set(0, 110, 0);
+                    camera.rotation.set(-Math.PI / 2, 0, 0);
+
+                    bloom.strength = 3.0;
+                    hudEl.style.display = 'none';
+
+                    rainCanvas.style.transition = 'opacity 0.8s ease';
+                    rainCanvas.style.opacity = '0.55';
+
+                    titlesEl.style.transform = 'translate(-50%, -60%) scale(1.08)';
+                }
+            } else {
+                var phase3T = t - (LOAD_TIME + FLASH_DUR);
+                if (!window._textRevealed) {
+                    window._textRevealed = true;
+                    revealTitles();
+                }
+                if (phase3T > 2.5 && enterBtn.style.display !== 'block') {
+                    enterBtn.style.display = 'block';
+                    requestAnimationFrame(function () { enterBtn.style.opacity = '1'; });
+                }
+                camera.position.y -= 0.45;
+                camera.rotation.z += 0.0008;
+                if (camera.position.y < -110) camera.position.y = 110;
+                codeLines.position.y += 1.0;
+                if (codeLines.position.y > 110) codeLines.position.y = 0;
+                monoliths.rotation.y = t * 0.04;
+                ptLight.intensity = 2 + Math.sin(t * 2) * 1;
+                bloom.strength = 1.9 + Math.sin(t * 2.5) * 0.45;
+            }
+
+            composer.render();
+        }
+
+        function revealTitles() {
+            var h1Text = 'INTO THE VOID 2.0';
+            var h2Text = 'MULTIVERSE OF THE MATRIX';
+            var h1El = document.getElementById('title-h1');
+            var h2El = document.getElementById('title-h2');
+            var divEl = document.getElementById('title-divider');
+            var tagEl = document.getElementById('title-tagline');
+            h1El.innerHTML = h1Text.split('').map(function (c) {
+                return c === ' ' ? ' ' : '<span class="char">' + c + '</span>';
+            }).join('');
+            h2El.innerHTML = h2Text.split('').map(function (c) {
+                return c === ' ' ? ' ' : '<span class="char">' + c + '</span>';
+            }).join('');
+            titlesEl.style.opacity = '1';
+            titlesEl.classList.add('revealed');
+            var h1Chars = h1El.querySelectorAll('.char');
+            var h2Chars = h2El.querySelectorAll('.char');
+            h1Chars.forEach(function (span, i) {
+                setTimeout(function () {
+                    var orig = span.innerText;
+                    var GLITCH = '@#$%&*01\u30A2\u30AB\u30B5\u30BF';
+                    span.classList.add('in');
+                    var flips = 0;
+                    var gid = setInterval(function () {
+                        if (flips < 3) {
+                            span.innerText = GLITCH[Math.floor(Math.random() * GLITCH.length)];
+                            span.style.color = '#00dbe9';
+                            flips++;
+                        } else {
+                            clearInterval(gid);
+                            span.innerText = orig === '\u00a0' ? '\u00a0' : orig;
+                            span.style.color = '';
+                        }
+                    }, 50);
+                }, i * 55);
+            });
+            var h1Delay = h1Chars.length * 55 + 200;
+            setTimeout(function () { divEl.classList.add('in'); }, h1Delay - 100);
+            h2Chars.forEach(function (span, i) {
+                setTimeout(function () { span.classList.add('in'); }, h1Delay + i * 40);
+            });
+            setTimeout(function () { tagEl.classList.add('in'); }, h1Delay + h2Chars.length * 40 + 400);
+            setTimeout(function () {
+                h1El.classList.add('glitch-loop');
+                h1El.style.animation = 'glitch 3.5s infinite, flicker 4s infinite';
+            }, h1Delay + h2Chars.length * 40 + 800);
+        }
+
+        window.addEventListener('resize', function () {
+            camera.aspect = innerWidth / innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(innerWidth, innerHeight);
+            composer.setSize(innerWidth, innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

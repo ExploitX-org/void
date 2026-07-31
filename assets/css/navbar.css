@@ -1,0 +1,69 @@
+.liquid-navbar {
+    position: fixed;
+    top: 16px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: 95%;
+    z-index: 9999;
+    border-radius: 40px;
+    background: rgba(19, 19, 19, 0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 219, 233, 0.2);
+    box-shadow: 
+        0 4px 30px rgba(0, 0, 0, 0.3),
+        0 0 15px rgba(0, 219, 233, 0.1),
+        inset 0 0 20px rgba(0, 219, 233, 0.05);
+    transition: background 0.5s ease, box-shadow 0.5s ease, border 0.5s ease, transform 0.4s ease, opacity 0.4s ease;
+    transform: translateY(0);
+    will-change: transform;
+}
+.liquid-navbar.nav-hidden {
+    transform: translateY(-150%);
+    opacity: 0;
+}
+.liquid-navbar:hover {
+    background: rgba(19, 19, 19, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 219, 233, 0.5);
+    box-shadow: 
+        0 8px 40px rgba(0, 0, 0, 0.4),
+        0 0 25px rgba(0, 219, 233, 0.3),
+        inset 0 0 30px rgba(0, 219, 233, 0.1);
+}
+.liquid-navbar nav a {
+    font-size: 11px !important;
+    letter-spacing: 0.05em !important;
+    padding: 6px 10px !important;
+    border-radius: 25px !important;
+    transition: all 0.6s ease !important;
+    border: 2px solid transparent !important;
+}
+@media (min-width: 640px) {
+    .liquid-navbar nav a {
+        font-size: 13px !important;
+        padding: 6px 14px !important;
+    }
+}
+@media (min-width: 768px) {
+    .liquid-navbar nav a {
+        font-size: 16px !important;
+        letter-spacing: 0.1em !important;
+        padding: 8px 20px !important;
+    }
+}
+.liquid-navbar nav a:hover {
+    color: rgb(38,47,54) !important;
+    background-color: white !important;
+    border-radius: 25px !important;
+}
+.liquid-navbar nav a.active {
+    color: white !important;
+    font-weight: bold !important;
+    border: 2px solid white !important;
+    background-color: transparent !important;
+    border-radius: 25px !important;
+}

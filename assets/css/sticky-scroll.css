@@ -1,0 +1,13 @@
+html {
+    scroll-behavior: smooth;
+    scroll-snap-type: y proximity;
+}
+main > section, 
+footer {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    scroll-margin-top: 80px;
+}
+#hyper-inline {
+    scroll-snap-align: none;
+}

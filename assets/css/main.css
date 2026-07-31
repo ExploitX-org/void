@@ -1,0 +1,243 @@
+        body {
+            background-color: #000000;
+            background-image:
+                linear-gradient(rgba(0, 219, 233, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 219, 233, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+            color: #e2e2e2;
+        }
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 0, 0, 0.1) 51%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.15;
+        }
+        .glow-cyan {
+            text-shadow: 0 0 10px rgba(0, 219, 233, 0.6);
+        }
+        .glow-magenta {
+            text-shadow: 0 0 10px rgba(208, 91, 255, 0.6);
+        }
+        .glitch-border {
+            position: relative;
+        }
+        .glitch-border::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            background: linear-gradient(90deg, transparent, #00dbe9, transparent, #d05bff, transparent);
+            z-index: -1;
+            opacity: 0.3;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.2em;
+            background-color: #00dbe9;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #00dbe9;
+        }
+        @keyframes marquee {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+#multiverse-scene{
+            position:absolute;
+            inset:0;
+            width:100%;
+            height:100%;
+            pointer-events:none;
+            z-index:2;
+        }
+        .realm{
+            position:absolute;
+            will-change:transform;
+        }
+        .castle{
+            top:-10%;
+            left:-6%;
+            width:50vw;
+        }
+        .orange{
+            top:17%;
+            left:-6%;
+            width:50vw;
+        }
+        .cyber{
+            top:49%;
+            left:-4%;
+            width:42vw;
+        }
+        .dino{
+            top:68%;
+            left:0;
+            width:31vw;
+        }
+        .ironman{
+            top:-2%;
+            right:-2%;
+            width:39vw;
+        }
+        .pyramid{
+            top:26%;
+            right:-4%;
+            width:42vw;
+        }
+        .galaxy{
+            top:55%;
+            right:-4%;
+            width:39vw;
+        }
+        .robot{
+            top:68%;
+            right:0;
+            width:31vw;
+        }
+:root {
+  --card-height: 480px;
+  --card-width: calc(var(--card-height) / 1.5);
+}
+.card {
+  width: var(--card-width);
+  height: var(--card-height);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 0 36px;
+  perspective: 2500px;
+  margin: 0;
+}
+.card .cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.card .wrapper {
+  transition: all 0.5s;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+}
+.card:hover .wrapper {
+  transform: perspective(900px) translateY(-5%) rotateX(25deg) translateZ(0);
+  box-shadow: 2px 35px 32px -8px rgba(0, 0, 0, 0.75);
+}
+.card .wrapper::before,
+.card .wrapper::after {
+  content: ;
+  opacity: 0;
+  width: 100%;
+  height: 80px;
+  transition: all 0.5s;
+  position: absolute;
+  left: 0;
+}
+.card .wrapper::before {
+  top: 0;
+  height: 100%;
+  background-image: linear-gradient(
+    to top,
+    transparent 46%,
+    rgba(12, 13, 19, 0.5) 68%,
+    rgba(12, 13, 19) 97%
+  );
+}
+.card .wrapper::after {
+  bottom: 0;
+  opacity: 1;
+  background-image: linear-gradient(
+    to bottom,
+    transparent 46%,
+    rgba(12, 13, 19, 0.5) 68%,
+    rgba(12, 13, 19) 97%
+  );
+}
+.card:hover .wrapper::before,
+.card .wrapper::after {
+  opacity: 1;
+}
+.card:hover .wrapper::after {
+  height: 120px;
+}
+.card .title {
+  width: 100%;
+  transition: transform 0.5s;
+}
+.card:hover .title {
+  transform: translate3d(0%, -50px, 100px);
+}
+.card .character {
+  width: 100%;
+  opacity: 0;
+  transition: all 0.5s;
+  position: absolute;
+  z-index: -1;
+}
+.card:hover .character {
+  opacity: 1;
+  transform: translate3d(0%, -30%, 100px);
+}
+.tab-container {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.55);
+    border: 1px solid rgba(0, 219, 233, 0.2);
+    border-radius: 18px;
+    padding: 4px;
+    width: 260px;
+    height: 64px;
+    backdrop-filter: blur(12px);
+}
+.tab-btn {
+    flex: 1;
+    height: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.6);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.tab-btn:hover {
+    color: #00dbe9;
+}
+.active-tab {
+    color: #00dbe9;
+    background: rgba(0, 219, 233, 0.12);
+    box-shadow:
+        inset 0 0 20px rgba(0,219,233,0.2),
+        0 0 20px rgba(0,219,233,0.25);
+}

@@ -1,0 +1,13 @@
+{
+  "name": "void-clt",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node dev-server.js"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^4.1.0",
+    "csso": "^5.0.0",
+    "html-minifier-terser": "^7.2.0"
+  }
+}
